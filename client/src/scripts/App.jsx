@@ -54,7 +54,7 @@ class BarChart extends Component {
 }
 
 class App extends Component {
-	state = { data: [], quote: 'infy', input: '' }
+	state = { data: [], quote: 'infy', input: 'infy' }
 	async componentDidMount() {
 		setInterval(async () => {
 			let quote = await axios.get(
@@ -62,8 +62,20 @@ class App extends Component {
 			)
 
 			let data = this.state.data
-			this.setState({ data: data })
+
+			if (data.length > 20) {
+				data.shift()
+			}
+
+			if (quote.data.lastPrice === data.slice(-1)[0]) {
+				let up_d = (1 / 100) * quote.data.lastPrice
+				if (Math.random() < 0.5) quote.data.lastPrice += up_d
+				else quote.data.lastPrice -= up_d
+			}
 			data.push(quote.data.lastPrice)
+
+			this.setState({ data: data })
+			// console.log(quote.data.lastPrice)
 		}, 2000)
 	}
 	render() {
@@ -75,9 +87,11 @@ class App extends Component {
 				</div>
 				<br />
 				<div>
+					{this.state.quote}
+					<br />
 					<input
 						type='text'
-						value={this.state.quote}
+						value={this.state.input}
 						onChange={(e) => {
 							this.setState({ input: [e.target.value] })
 						}}
@@ -85,9 +99,11 @@ class App extends Component {
 					<input
 						type='submit'
 						value='submit'
-						onSubmit={() => {
+						onClick={() => {
 							let input = this.state.input
-							this.setState({ quote: input })
+							this.setState({ quote: input }, () =>
+								console.log(this.state)
+							)
 						}}
 					/>
 					<br />
